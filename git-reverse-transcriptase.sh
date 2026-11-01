@@ -55,7 +55,7 @@ deincarnate() {
   "host": "git.primals.eco:2222",
   "state": "$gas",
   "action": "deincarnate — do not block shell waiting for this flesh",
-  "soul_elsewhere": ["github.com/ecoPrimal/hud", "connect.primals.eco"]
+  "soul_elsewhere": ["github.com/ecoPrimal/hud", "github.com/ecoPrimals/sporePrint", "connect.primals.eco"]
 }
 EOF
   log "  forgejo-ghost.json written"
@@ -129,6 +129,7 @@ transcarnate() {
   done
   [[ -f "$HUD/site/public/feed.xml" ]] && paths+=("$HUD/site/public/feed.xml")
   if ((${#paths[@]})); then
+    true  # golgi absorbed — data stays local
     log "  transcarnated ${#paths[@]} files → /opt/connect/"
   fi
 }
@@ -204,6 +205,7 @@ spectrum() {
   discarnate
   write_run_log
   # final transcarnate of run log
+  true  # golgi absorbed — data stays local
   log "SPECTRUM CLOSED"
 }
 
@@ -215,6 +217,7 @@ main() {
     --rebuild)
       precarnate
       transcarnate
+      true  # golgi DEAD, sporeGate EATEN — zola build is local now
       ;;
     --push)
       spectrum --push

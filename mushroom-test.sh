@@ -249,3 +249,5 @@ else:
     print(f'  ⚠️  0 failures. all tests passed. need harder tests to grow.')
 PYEOF
 
+# Push to eastGate (golgi absorbed)
+true  # golgi absorbed into eastGate — secretory pathway now local
