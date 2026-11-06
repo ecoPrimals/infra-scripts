@@ -283,6 +283,76 @@ if os.path.exists(evolve_path):
 
 vdj["philosophy"] = "V(D)J recombination: diversity through controlled mutation. The immune clock ticks in adaptations, not seconds."
 
+# ═══ SCALE 0: HYPERLOCAL — Pixel Physical Spacetime ═══
+hyperlocal = {}
+try:
+    import subprocess as sp
+
+    def adb_q(cmd):
+        try:
+            r = sp.run(["adb", "-s", "192.168.9.217:5555", "shell",
+                        f"su -c 'su 10197 -c \"/data/data/com.termux/files/usr/bin/{cmd}\"'"],
+                       capture_output=True, text=True, timeout=10)
+            return r.stdout.strip()
+        except:
+            return ""
+
+    # Light — actual photons
+    try:
+        raw = adb_q('termux-sensor -s "TMD3719 Ambient Light" -n 1')
+        if raw:
+            d = json.loads(raw)
+            k = list(d.keys())[0]
+            hyperlocal["light_lux"] = round(d[k]["values"][0], 1)
+    except:
+        pass
+
+    # Pressure — weather is time
+    try:
+        raw = adb_q('termux-sensor -s "ICP20100 Pressure Sensor" -n 1')
+        if raw:
+            d = json.loads(raw)
+            k = list(d.keys())[0]
+            hyperlocal["pressure_hpa"] = round(d[k]["values"][0], 2)
+    except:
+        pass
+
+    # Steps — Kevin's walking rhythm
+    try:
+        raw = adb_q('termux-sensor -s "Step Counter" -n 1')
+        if raw:
+            d = json.loads(raw)
+            k = list(d.keys())[0]
+            hyperlocal["steps"] = int(d[k]["values"][0])
+    except:
+        pass
+
+    # Battery — thermal clock
+    try:
+        raw = adb_q("termux-battery-status")
+        if raw:
+            d = json.loads(raw)
+            hyperlocal["battery_pct"] = d.get("percentage")
+            hyperlocal["temp_c"] = round(d.get("temperature", 0), 1)
+    except:
+        pass
+
+    # WiFi — spatial anchor
+    try:
+        raw = adb_q("termux-wifi-connectioninfo")
+        if raw:
+            d = json.loads(raw)
+            hyperlocal["wifi_ssid"] = d.get("ssid")
+            hyperlocal["wifi_rssi"] = d.get("rssi")
+    except:
+        pass
+
+    hyperlocal["source"] = "grapheneGate (Pixel 8a) — physical spacetime"
+    hyperlocal["philosophy"] = "The Pixel measures actual photons, actual air pressure, actual footsteps. Not calculated — sensed."
+
+except Exception as e:
+    hyperlocal["error"] = str(e)
+
 # ═══ BUILD CHRONOS ═══
 chronos = {
     "ts": now_utc.isoformat(),
@@ -294,6 +364,7 @@ chronos = {
         "timezone": TZ_NAME,
     },
     "scales": {
+        "hyperlocal": hyperlocal,
         "body": body,
         "local": local,
         "utc": utc,
@@ -303,6 +374,7 @@ chronos = {
         "vdj": vdj,
     },
     "summary": {
+        "hyperlocal": f"{hyperlocal.get('light_lux','?')} lux, {hyperlocal.get('pressure_hpa','?')} hPa, {hyperlocal.get('steps','?')} steps, {hyperlocal.get('temp_c','?')}°C",
         "body": f"uptime {body['uptime_days']}d, {body['mushrooms_active']}/{body['mushrooms_total']} mushrooms active",
         "local": f"{local['day_name']} {local['hour_12']} {local['timezone']}",
         "utc": utc["iso"],
@@ -324,12 +396,13 @@ for path in [
 
 # Print
 s = chronos["summary"]
-print(f"⏱️ CHRONOS")
-print(f"  BODY:     {s['body']}")
-print(f"  LOCAL:    {s['local']}")
-print(f"  UTC:      {s['utc']}")
-print(f"  SOLAR:    {s['solar']}")
-print(f"  GALACTIC: {s['galactic']}")
-print(f"  VDJ:      {s['vdj']}")
+print(f"⏱️ CHRONOS — 8 scales of time")
+print(f"  HYPERLOCAL: {s['hyperlocal']}")
+print(f"  BODY:       {s['body']}")
+print(f"  LOCAL:      {s['local']}")
+print(f"  UTC:        {s['utc']}")
+print(f"  SOLAR:      {s['solar']}")
+print(f"  GALACTIC:   {s['galactic']}")
+print(f"  VDJ:        {s['vdj']}")
 
 PYEOF
