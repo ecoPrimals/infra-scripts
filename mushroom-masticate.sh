@@ -24,14 +24,14 @@
 set -euo pipefail
 
 CONNECT_DIR="${CONNECT_DIR:-/home/eastgate/Development/ecoPrimals/infra/hud/site/public/data}"
-OLLAMA="http://localhost:11434"
+OLLAMA="http://localhost:11436"
 BATCH=3
 
 python3 << 'PYEOF'
 import json, os, random, datetime, hashlib, glob, math, urllib.request
 
 DATA = os.environ.get('CONNECT_DIR', '/home/eastgate/Development/ecoPrimals/infra/hud/site/public/data')
-OLLAMA = os.environ.get('OLLAMA', 'http://localhost:11434')
+OLLAMA = os.environ.get('OLLAMA', 'http://localhost:11436')
 BATCH = int(os.environ.get('BATCH', '3'))
 now = datetime.datetime.now(datetime.timezone.utc)
 ts = now.strftime('%Y-%m-%dT%H:%M:%SZ')

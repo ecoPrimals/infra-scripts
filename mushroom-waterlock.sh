@@ -53,7 +53,7 @@ def ollama_generate(model, prompt, timeout=30):
     import urllib.request
     try:
         data = json.dumps({"model": model, "prompt": prompt, "stream": False}).encode()
-        req = urllib.request.Request("http://localhost:11434/api/generate",
+        req = urllib.request.Request("http://localhost:11436/api/generate",
                                      data=data,
                                      headers={"Content-Type": "application/json"})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
