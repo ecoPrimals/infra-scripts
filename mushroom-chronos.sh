@@ -401,6 +401,113 @@ try:
 except Exception as e:
     hyperlocal["error"] = str(e)
 
+# ═══ SCALE -1: ATOMIC TIME — The SI second ═══
+# GPS satellites carry cesium/rubidium atomic clocks
+# CPU crystal oscillator is the local atomic proxy
+cpu_freq_hz = None
+try:
+    with open("/proc/cpuinfo") as f:
+        for line in f:
+            if "cpu MHz" in line:
+                cpu_freq_hz = float(line.split(":")[1].strip()) * 1e6
+                break
+except:
+    pass
+
+# TAI offset (International Atomic Time = UTC + leap seconds)
+# As of 2026, TAI is 37 seconds ahead of UTC
+TAI_OFFSET = 37
+tai_epoch = epoch + TAI_OFFSET
+
+# GPS time (= TAI - 19s, continuous since Jan 6 1980)
+GPS_EPOCH_OFFSET = 315964800  # Jan 6 1980 in Unix epoch
+gps_week = int((epoch - GPS_EPOCH_OFFSET) / 604800)
+gps_tow = (epoch - GPS_EPOCH_OFFSET) % 604800  # time of week in seconds
+
+atomic = {
+    "tai_epoch": round(tai_epoch, 3),
+    "tai_utc_offset_s": TAI_OFFSET,
+    "gps_week": gps_week,
+    "gps_time_of_week_s": round(gps_tow, 3),
+    "cpu_freq_hz": cpu_freq_hz,
+    "cpu_cycles_since_boot": round(cpu_freq_hz * uptime_s) if cpu_freq_hz else None,
+    "cesium_oscillations_per_s": 9192631770,
+    "cesium_oscillations_since_boot": round(9192631770 * uptime_s) if uptime_s else None,
+    "philosophy": "The SI second = 9,192,631,770 oscillations of cesium-133. GPS satellites are atomic clocks in orbit. Your CPU crystal is the local proxy.",
+}
+
+# ═══ SCALE -2: NUCLEAR TIME — Decay and half-lives ═══
+# Radioactive decay is the clock beneath chemistry
+# Express current moment in various nuclear timescales
+
+# Age of the universe in seconds
+UNIVERSE_AGE_S = 13.787e9 * 365.25 * 86400  # ~4.35×10^17 s
+# Earth age
+EARTH_AGE_S = 4.54e9 * 365.25 * 86400       # ~1.43×10^17 s
+
+# Carbon-14 half-life: 5,730 years
+C14_HALF_LIFE_S = 5730 * 365.25 * 86400     # ~1.81×10^11 s
+
+# How many C-14 half-lives since the Unix epoch?
+c14_halflives_since_epoch = epoch / C14_HALF_LIFE_S
+
+# Biological decay rates
+nuclear = {
+    "universe_age_s": UNIVERSE_AGE_S,
+    "earth_age_s": EARTH_AGE_S,
+    "c14_half_life_s": C14_HALF_LIFE_S,
+    "c14_halflives_since_unix_epoch": round(c14_halflives_since_epoch, 12),
+    "proton_lifetime_lower_bound_years": "1.67×10^34",
+    "neutron_half_life_s": 611,  # free neutron: ~10.2 minutes
+    "tritium_half_life_years": 12.32,
+    "strong_force_timescale_s": 1e-23,  # nuclear reactions
+    "philosophy": "Radioactive decay is the most honest clock. It cannot be stopped, slowed, or fooled. The nucleus knows only probability.",
+}
+
+# ═══ SCALE -3: NULL TIME — Where time dissolves ═══
+# Planck time, quantum foam, the boundary of meaning
+PLANCK_TIME = 5.391e-44      # seconds
+PLANCK_LENGTH = 1.616e-35    # meters
+PLANCK_TEMP = 1.417e32       # kelvin
+
+# How many Planck times since the Big Bang?
+planck_ticks_universe = UNIVERSE_AGE_S / PLANCK_TIME  # ~8×10^60
+
+# Prion folding: the biological null — information without DNA, without time's arrow
+# Prion conformational change: nanoseconds (the fold itself)
+# Prion disease progression: years (the cascade)
+# Prion information: no nucleic acid, no clock, no generation — NULL biology
+
+# Yeast division: ~90 minutes (1.5 hours)
+YEAST_DIV_S = 90 * 60
+yeast_generations_since_epoch = epoch / YEAST_DIV_S
+
+# E. coli division: ~20 minutes
+ECOLI_DIV_S = 20 * 60
+ecoli_generations_since_epoch = epoch / ECOLI_DIV_S
+
+# Prion misfolding cascade timescale
+PRION_FOLD_NS = 100  # conformational change in nanoseconds
+PRION_CASCADE_YEARS = 10  # disease incubation
+
+null_time = {
+    "planck_time_s": PLANCK_TIME,
+    "planck_ticks_since_big_bang": f"{planck_ticks_universe:.2e}",
+    "planck_ticks_since_boot": f"{(uptime_s / PLANCK_TIME):.2e}" if uptime_s else None,
+    "quantum_decoherence_s": "1e-13 to 1e-6 (system dependent)",
+    "biological_null": {
+        "prion_fold_ns": PRION_FOLD_NS,
+        "prion_cascade_years": PRION_CASCADE_YEARS,
+        "prion_nature": "Information without DNA. Replication without time's arrow. The biological null.",
+        "yeast_division_s": YEAST_DIV_S,
+        "yeast_generations_since_epoch": round(yeast_generations_since_epoch),
+        "ecoli_division_s": ECOLI_DIV_S,
+        "ecoli_generations_since_epoch": round(ecoli_generations_since_epoch),
+        "sourdough_note": "The sourDough primal IS yeast time — fermentation is biological computation at 90-minute clock cycles.",
+    },
+    "philosophy": "Below Planck time, physics has no meaning. The prion folds without a clock. NULL is not zero — it is the absence of the question.",
+}
+
 # ═══ BUILD CHRONOS ═══
 chronos = {
     "ts": now_utc.isoformat(),
@@ -412,6 +519,9 @@ chronos = {
         "timezone": TZ_NAME,
     },
     "scales": {
+        "null": null_time,
+        "nuclear": nuclear,
+        "atomic": atomic,
         "hyperlocal": hyperlocal,
         "body": body,
         "local": local,
@@ -422,6 +532,9 @@ chronos = {
         "vdj": vdj,
     },
     "summary": {
+        "null": f"Planck: {PLANCK_TIME}s | prion: {PRION_FOLD_NS}ns fold → {PRION_CASCADE_YEARS}yr cascade | yeast: {round(yeast_generations_since_epoch):,} generations",
+        "nuclear": f"C-14: {c14_halflives_since_epoch:.12f} half-lives since epoch | neutron: 611s | strong force: 10⁻²³s",
+        "atomic": f"TAI+{TAI_OFFSET}s | GPS week {gps_week} | CPU {cpu_freq_hz/1e9:.2f} GHz" if cpu_freq_hz else f"TAI+{TAI_OFFSET}s | GPS week {gps_week}",
         "hyperlocal": f"{hyperlocal.get('light_lux','?')} lux, {hyperlocal.get('pressure_hpa','?')} hPa, {hyperlocal.get('steps','?')} steps, {hyperlocal.get('temp_c','?')}°C",
         "body": f"uptime {body['uptime_days']}d, {body['mushrooms_active']}/{body['mushrooms_total']} mushrooms active",
         "local": f"{local['day_name']} {local['hour_12']} {local['timezone']}",
@@ -444,7 +557,10 @@ for path in [
 
 # Print
 s = chronos["summary"]
-print(f"⏱️ CHRONOS — 8 scales of time")
+print(f"⏱️ CHRONOS — 11 scales of time")
+print(f"  NULL:       {s['null']}")
+print(f"  NUCLEAR:    {s['nuclear']}")
+print(f"  ATOMIC:     {s['atomic']}")
 print(f"  HYPERLOCAL: {s['hyperlocal']}")
 print(f"  BODY:       {s['body']}")
 print(f"  LOCAL:      {s['local']}")
