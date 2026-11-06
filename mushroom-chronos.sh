@@ -26,25 +26,43 @@ DATA_DIR="/home/eastgate/Development/ecoPrimals/infra/hud/site/public/data"
 GUT="/opt/Gaia/data/gut"
 WEB_GUT="/home/eastgate/.local/share/gaia/data/gut"
 LOG="/tmp/mushroom-chronos.log"
+ROUTER_PASS="ExoticPanda714!!"
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
 echo "[$TS] chronos cycle" >> "$LOG"
 
-python3 - "$DATA_DIR" "$GUT" "$WEB_GUT" "$LOG" <<'PYEOF'
+python3 - "$DATA_DIR" "$GUT" "$WEB_GUT" "$LOG" "$ROUTER_PASS" <<'PYEOF'
 import json, os, sys, math, time
 from datetime import datetime, timezone, timedelta
 
 data_dir, gut_dir, web_gut, log_file = sys.argv[1:5]
+router_pass = sys.argv[5] if len(sys.argv) > 5 else "ExoticPanda714!!"
 
 now_utc = datetime.now(timezone.utc)
 now_local = datetime.now()
 epoch = time.time()
 
-# ═══ LOCATION ═══
-LAT = 42.47      # 4422 Southgate Ave
-LON = -83.18
+# ═══ LOCATION — GPS from Pixel when available, fallback to known ═══
+LAT = 42.6884     # GPS: 42.688445 (Lansing, MI)
+LON = -84.5431    # GPS: -84.543075
+ALT = 262.0       # GPS altitude meters
 TZ_NAME = "America/New_York"
 TZ_OFFSET = now_local.utcoffset().total_seconds() / 3600 if now_local.utcoffset() else -5
+
+# Try live GPS from Pixel
+try:
+    import subprocess as _sp
+    _gps = _sp.run(["adb", "-s", "192.168.9.217:5555", "shell",
+        "su -c 'su 10197 -c \"/data/data/com.termux/files/usr/bin/termux-location -p network\"'"],
+        capture_output=True, text=True, timeout=10)
+    if _gps.returncode == 0 and _gps.stdout.strip():
+        _gd = json.loads(_gps.stdout)
+        if _gd.get("latitude"):
+            LAT = _gd["latitude"]
+            LON = _gd["longitude"]
+            ALT = _gd.get("altitude", ALT)
+except:
+    pass  # use fallback
 
 # ═══ SCALE 1: BODY TIME ═══
 # Gaia's internal rhythms
@@ -108,12 +126,42 @@ utc = {
     "mjd": round(epoch / 86400 + 40587, 6),  # Modified Julian Date
 }
 
-# ═══ SCALE 4: LAN TIME ═══
-# NTP sync status across the mesh
+# ═══ SCALE 4: LAN TIME — All clocks in the mesh ═══
+import subprocess as _sp2
+
+def _get_clock(cmd, timeout=5):
+    try:
+        r = _sp2.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
+        return r.stdout.strip() if r.returncode == 0 else None
+    except:
+        return None
+
+east_epoch = epoch
+# northGate clock via HTTP Date header
+north_date = _get_clock("curl -sI --connect-timeout 3 http://192.168.4.147:8080/ 2>/dev/null | grep -i '^Date:' | sed 's/Date: //'")
+# Router clock
+router_date = _get_clock(f"sshpass -p '{router_pass}' ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3 root@192.168.4.1 'date +%s' 2>/dev/null")
+# Pixel clock
+pixel_date = _get_clock("adb -s 192.168.9.217:5555 shell 'date +%s' 2>/dev/null")
+
+clocks = {"eastGate": round(east_epoch)}
+skews = {}
+if router_date and router_date.isdigit():
+    clocks["router"] = int(router_date)
+    skews["router_skew_s"] = int(router_date) - round(east_epoch)
+if pixel_date and pixel_date.strip().isdigit():
+    clocks["pixel"] = int(pixel_date.strip())
+    skews["pixel_skew_s"] = int(pixel_date.strip()) - round(east_epoch)
+if north_date:
+    clocks["northGate_http"] = north_date
+
 lan = {
-    "ntp_synced": True,  # timedatectl shows synchronized
+    "ntp_synced": True,
     "ntp_server": "router (.1) → pool.ntp.org",
-    "skew_estimate_ms": 0,  # Local NTP is synced
+    "clocks": clocks,
+    "skews": skews,
+    "max_skew_s": max(abs(v) for v in skews.values()) if skews else 0,
+    "mesh_coherent": all(abs(v) <= 5 for v in skews.values()) if skews else True,
 }
 
 # ═══ SCALE 5: SOLAR TIME ═══
