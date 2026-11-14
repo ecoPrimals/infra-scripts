@@ -72,7 +72,7 @@ def build_signal_matrix():
 
     # ── DIMENSION 2: WAN latency (membrane/horizon) ─────────────
     wan_nodes = {
-        "golgi-NYC":    "157.230.3.183",
+        "golgi-NYC":    "COLLAPSED:DOWN",
         "cloudflare":   "hud.primals.eco",
         "github-pages": "hypothesis.primals.eco",
         "google-dns":   "8.8.8.8",

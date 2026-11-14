@@ -41,7 +41,7 @@ NODES = {
     "github-pages":  {"ip": "hypothesis.primals.eco",  "layer": "membrane", "medium": "anycast-CDN", "jurisdiction": "anycast-GDPR"},
     "google-dns":    {"ip": "8.8.8.8",                 "layer": "membrane", "medium": "anycast",     "jurisdiction": "US-global"},
     # WAN — VPS (fixed location)
-    "golgi":         {"ip": "157.230.3.183", "layer": "horizon",  "medium": "VPS-DO-NYC1", "jurisdiction": "NY-US-AGPL3"},
+    "golgi":         {"ip": "COLLAPSED:DOWN", "layer": "horizon",  "medium": "VPS-DO-NYC1", "jurisdiction": "NY-US-AGPL3"},
 }
 
 # ── Layer Properties (speed of "light" through each medium) ──────

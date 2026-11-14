@@ -34,7 +34,7 @@ def log(msg):
 gates = {
     "eastGate": "127.0.0.1",
     "graftGate": "192.168.4.107",
-    "blueGate": "192.168.4.210",
+    "blueGate": "192.168.4.100",
     "southGate": "192.168.4.148",
     "ironGate": "192.168.4.237",
 }

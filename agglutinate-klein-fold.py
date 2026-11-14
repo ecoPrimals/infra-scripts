@@ -141,7 +141,7 @@ def agglutinate():
             [f"subdomain:{s}.primals.eco" for s in SUBDOMAINS_522]
         ),
         "count": len(MCP_FEEDS_DEAD) + len(SUBDOMAINS_522),
-        "diagnosis": "Cloudflare cannot reach golgi (157.230.3.183). "
+        "diagnosis": "Cloudflare cannot reach golgi (COLLAPSED: VPS DOWN). "
                      "22 MCP feeds + 4 subdomains share this root cause. "
                      "cloudflared tunnel OR firewall fix needed.",
         "severity": "critical",

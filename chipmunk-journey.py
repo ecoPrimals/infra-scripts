@@ -61,7 +61,7 @@ NODES = [
             {"path": "/", "expect": 200, "label": "Klein Gate"},
             {"path": "/was.json", "expect": 200, "label": "was.json (inner)"},
         ],
-        "base": "http://157.230.3.183",
+        "base": "http://primals.eco",
     },
     {
         "id": "sporeprint",
@@ -69,7 +69,7 @@ NODES = [
         "endpoints": [
             {"path": "/", "expect": 200, "label": "sporePrint"},
         ],
-        "base": "http://157.230.3.183",
+        "base": "http://primals.eco",
         "host": "sporeprint.primals.eco",
     },
     {
@@ -80,7 +80,7 @@ NODES = [
             {"path": "/campfire.json", "expect": 200, "label": "campfire"},
             {"path": "/chipmunk.json", "expect": 200, "label": "chipmunk"},
         ],
-        "base": "http://157.230.3.183",
+        "base": "http://primals.eco",
         "host": "nestgate.io",
     },
     {
