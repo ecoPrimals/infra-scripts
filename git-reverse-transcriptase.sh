@@ -148,7 +148,7 @@ discarnate() {
   code="$(curl -s -o /dev/null -w '%{http_code}' https://hud.primals.eco/data/incarnation-spectrum.json 2>/dev/null || echo 000)"
   local connect
   connect="$(curl -s -o /dev/null -w '%{http_code}' https://connect.primals.eco/incarnation-spectrum.json 2>/dev/null || echo 000)"
-  log "  hud.primals.eco ASSETS=$code (404=discarnate until wrangler)"
+  log "  hud.primals.eco ASSETS=$code (served by dromedary, CF DEPRECATED)"
   log "  connect.primals.eco=$connect (200=spirit mirrored)"
 }
 
