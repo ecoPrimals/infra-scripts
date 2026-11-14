@@ -188,6 +188,8 @@ if MARROW_FILE.exists():
             continue
         try:
             entry = json.loads(line)
+            if not isinstance(entry, dict):
+                continue
             req = entry.get("request", {})
             hdrs = req.get("headers", {})
             ua = ""
