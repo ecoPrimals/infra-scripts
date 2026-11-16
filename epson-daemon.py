@@ -157,3 +157,25 @@ if __name__ == '__main__':
     print(f"   POST /print   — print text body")
     print(f"   GET  /scans   — list all batches")
     server.serve_forever()
+
+
+# === SOLAR PANEL ENDPOINT (added for frameGate) ===
+# Original class is EpsonHandler — monkey-patch POST to also handle /solar
+_orig_post = EpsonHandler.do_POST
+def _new_post(self):
+    from urllib.parse import urlparse
+    url = urlparse(self.path)
+    if url.path == '/solar':
+        import os
+        length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(length)
+        solar_file = "/home/eastgate/Development/ecoPrimals/data/body/frame-solar-feed.jsonl"
+        with open(solar_file, 'a') as f:
+            f.write(body.decode() + '\n')
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        self.wfile.write(b'{"ok": true, "stored": "frame-solar-feed.jsonl"}')
+        return
+    _orig_post(self)
+EpsonHandler.do_POST = _new_post
